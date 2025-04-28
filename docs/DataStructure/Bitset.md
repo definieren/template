@@ -1,3 +1,5 @@
+基本用法和 `std::bitset` 一样，区别是修改用 `.set()`，查询用 `.get()`。
+
 ```cpp
 template<class T>
 struct BitSet {

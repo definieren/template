@@ -1,3 +1,5 @@
+$O(n) - O(1)$ RMQ。
+
 ```cpp
 template<class T, class Cmp = less<T>>
 struct RMQ {
