@@ -97,54 +97,34 @@ extra_css:
 
 nav: 
   - Home: index.md
-  - 缺省源: DefaultSource.md
+  - 缺省源: DefaultSource/DefaultSource.md
   - 数学:
-    - 组合数预处理: Math/fr&inv.md
+    - 组合数学:
+      - 组合数预处理: Math/Combinatorics/Combination.md
+      - 静态取模类: Math/Combinatorics/StaticModint.md
+      - 动态取模类: Math/Combinatorics/DynamicModint.md
     - 多项式:
-      - 多项式: Math/poly/poly.md
-      - 拉格朗日插值: Math/poly/interpolation.md
-      - 集合幂级数: Math/poly/FWT.md
+      - 多项式: Math/Polynomial/Poly.md
+      - 拉格朗日插值: Math/Polynomial/Interpolation.md
+      - 集合幂级数: Math/Polynomial/SetPowerSeries.md
     - 数论:
-      - Lucas 定理: Math/numbertheory/lucas.md
-      - 最大公约数: Math/numbertheory/gcd.md
-      - Miller-Rabin: Math/numbertheory/millerrabin.md
-      - Pollard-Rho: Math/numbertheory/pollardrho.md
-      - 大步小步: Math/numbertheory/BSGS.md
-      - 中国剩余定理: Math/numbertheory/CRT.md
-      - 原根: Math/numbertheory/genshin.md
-      - 筛法: 
-        - 杜教筛: Math/numbertheory/sieve/dusieve.md
-        - Min-25 筛: Math/numbertheory/sieve/min25sieve.md
-      - 前缀和与反演: Math/numbertheory/oper.md
+      - 质因数分解: Math/NumberTheory/Factorize.md
+      - 线性筛: Math/NumberTheory/Sieve.md
     - 线性代数:
-        - 行列式求值: Math/Linear/determinant.md
-        - 高斯消元: Math/Linear/gauss.md
-        - 矩阵求逆: Math/Linear/inv.md
+      - 行列式: Math/LinearAlgebra/Determinant.md
+      - Pfaffian: Math/LinearAlgebra/Pfaffian.md
   - 字符串:
-    - manacher: String/manacher.md
-    - 后缀数组: String/SA.md
-    - 后缀自动机: String/SAM.md
-    - AC 自动机: String/ACAM.md
-    - 回文自动机: String/PAM.md
   - 图论:
-    - prufer 序: Graph/prufer.md
-    - 树链剖分: Graph/HLD.md
-    - dfs 序 LCA: Graph/LCA.md
-    - 网络流: Graph/flow.md
-    - KM 算法: Graph/KM.md
-    - 连通性: Graph/connection.md
-    - 树哈希: Graph/treehash.md
-    - 点分治: Graph/starch.md
+    - 网络流: Graph/Flow.md
+    - 存图: Graph/Graph.md
   - 数据结构:
-    - 可删堆: DS/delheap.md
-    - 可删集合: DS/delset.md
-    - 线段树: DS/Segment.md
-    - 李超树: DS/LiCT.md
-    - Splay: DS/Splay.md
-    - fhq treap: DS/FHQ.md
-    - 可持久化平衡树: DS/exFHQ.md
-    - 动态树: DS/LCT.md
-    - 可并堆: DS/LTT.md
-    - K-D tree: DS/KDT.md
+    - 线段树: DataStructure/SegmentTree.md
+    - RMQ: DataStructure/RMQ.md
+    - Bitset: DataStructure/Bitset.md
+    - 哈希表: DataStructure/HashMap.md
   - 其他:
-    - SMAWK: Oth/SMAWK.md
+    - 凸相关:
+      - SMAWK: Other/Convex/SMAWK.md
+    - 高精度: Other/BigNum.md
+    - 有理数类: Other/Rational.md
+    - YesNo: Other/YesNo.md
