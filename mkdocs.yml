@@ -1,0 +1,150 @@
+﻿site_name: My Blogs
+site_url: https://definieren.github.io/template
+site_author: definieren
+strict: false
+
+theme: 
+  name: null
+  custom_dir: 'mkdocs-material/material'
+  palette:
+    - scheme: default
+      primary: white
+      accent: red
+      toggle:
+        icon: material/brightness-7
+        name: 切换至夜间模式
+    - scheme: slate
+      primary: black
+      accent: white
+      toggle: 
+        icon: material/brightness-4
+        name: 切换至白天模式
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - navigation.expand
+    - search.share
+  language: zh
+  icon:
+    repo: fontawesome/brands/github
+  font:
+    text: 'Fira Sans'
+    code: 'Fira Mono'
+
+edit_uri: edit/main/docs
+repo_url: https://github.com/definieren/definieren.github.io/template
+repo_name: template
+
+copyright: Copyright &copy; 2023 definieren
+
+hooks:
+  - hooks/on_env.py
+
+extra:
+  generator: true
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/definieren
+    - icon: fontawesome/solid/paper-plane
+      link: mailto:<1343004263@qq.com>
+
+markdown_extensions:
+  - admonition
+  - def_list
+  - footnotes
+  - meta
+  - toc:
+      permalink: ""
+      slugify: !!python/name:pymdownx.slugs.uslugify
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.caret
+  - pymdownx.critic
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_generator: !!python/name:pymdownx.emoji.to_svg
+  - pymdownx.highlight:
+      linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.magiclink
+  - pymdownx.mark
+  - pymdownx.snippets:
+      check_paths: true
+  - pymdownx.progressbar
+  - pymdownx.smartsymbols
+  - pymdownx.superfences:
+      custom_fences:
+        - name: math
+          class: arithmatex
+          format: !!python/name:pymdownx.arithmatex.fence_mathjax_format
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+  - pymdownx.tabbed:
+      alternate_style: true
+
+extra_javascript:
+  - 'static/js/math-csr.js?math-csr'
+  - 'assets/vendor/mathjax/es5/tex-mml-chtml.js?math-csr'
+
+extra_css:
+  - 'static/css/extra.css?v=14'
+
+nav: 
+  - Home: index.md
+  - 缺省源: 缺省源.md
+  - 数学:
+    - 组合数预处理: Math/fr&inv.md
+    - 多项式:
+      - 多项式: Math/poly/poly.md
+      - 拉格朗日插值: Math/poly/interpolation.md
+      - 集合幂级数: Math/poly/FWT.md
+    - 数论:
+      - Lucas 定理: Math/numbertheory/lucas.md
+      - 最大公约数: Math/numbertheory/gcd.md
+      - Miller-Rabin: Math/numbertheory/millerrabin.md
+      - Pollard-Rho: Math/numbertheory/pollardrho.md
+      - 大步小步: Math/numbertheory/BSGS.md
+      - 中国剩余定理: Math/numbertheory/CRT.md
+      - 原根: Math/numbertheory/genshin.md
+      - 筛法: 
+        - 杜教筛: Math/numbertheory/sieve/dusieve.md
+        - Min-25 筛: Math/numbertheory/sieve/min25sieve.md
+      - 前缀和与反演: Math/numbertheory/oper.md
+    - 线性代数:
+        - 行列式求值: Math/Linear/determinant.md
+        - 高斯消元: Math/Linear/gauss.md
+        - 矩阵求逆: Math/Linear/inv.md
+  - 字符串:
+    - manacher: String/manacher.md
+    - 后缀数组: String/SA.md
+    - 后缀自动机: String/SAM.md
+    - AC 自动机: String/ACAM.md
+    - 回文自动机: String/PAM.md
+  - 图论:
+    - prufer 序: Graph/prufer.md
+    - 树链剖分: Graph/HLD.md
+    - dfs 序 LCA: Graph/LCA.md
+    - 网络流: Graph/flow.md
+    - KM 算法: Graph/KM.md
+    - 连通性: Graph/connection.md
+    - 树哈希: Graph/treehash.md
+    - 点分治: Graph/starch.md
+  - 数据结构:
+    - 可删堆: DS/delheap.md
+    - 可删集合: DS/delset.md
+    - 线段树: DS/Segment.md
+    - 李超树: DS/LiCT.md
+    - Splay: DS/Splay.md
+    - fhq treap: DS/FHQ.md
+    - 可持久化平衡树: DS/exFHQ.md
+    - 动态树: DS/LCT.md
+    - 可并堆: DS/LTT.md
+    - K-D tree: DS/KDT.md
+  - 其他:
+    - SMAWK: Oth/SMAWK.md
