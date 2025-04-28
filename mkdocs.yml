@@ -97,7 +97,7 @@ extra_css:
 
 nav: 
   - Home: index.md
-  - 缺省源: 缺省源.md
+  - 缺省源: DefaultSource.md
   - 数学:
     - 组合数预处理: Math/fr&inv.md
     - 多项式:

@@ -23,4 +23,5 @@ inline void commit()
 int main()
 {
 	commit();
+	return 0;
 }
