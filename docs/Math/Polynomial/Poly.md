@@ -192,7 +192,7 @@ struct Poly : public vector<Z> {
 		return g;
 	}
 	friend Poly Inv(const Poly &f, const int &lim) {
-		assert(f.size() && f[0].x);
+		assert(f.size() && f[0]);
 		Poly g{f[0].inv()}; int k = 1;
 		while (k < lim) {
 			g.resize(k <<= 1);
@@ -217,7 +217,7 @@ struct Poly : public vector<Z> {
 	friend Poly Div(const Poly &h, const Poly &f, const size_t &lim) {
 		if (__builtin_expect(lim == 0, 0)) return Poly();
 		if (__builtin_expect(h.empty(), 0)) return Poly(lim);
-		assert(f.size() && f[0].x);
+		assert(f.size() && f[0]);
 		size_t k = 1;
 		Poly g{f[0].inv()}, q{g[0] * h[0]}, F, G, H, Q;
 		while (k < lim) {

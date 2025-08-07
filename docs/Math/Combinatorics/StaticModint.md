@@ -7,7 +7,7 @@ private:
 	U0 x;
 	template<class T>
 	static constexpr unsigned SafeMod(T x) {
-		if constexpr (is_unsigned<T>::value) {
+		if constexpr (std::is_unsigned<T>::value) {
 			x %= static_cast<T>(Mod);
 			return static_cast<U0>(x);
 		} else {
@@ -20,7 +20,7 @@ public:
 	constexpr Static_Modint(): x(static_cast<U0>(0)) {}
 	template<class T>
 	constexpr Static_Modint(T _x): x(SafeMod(_x)) {}
-	static constexpr Static_Modint raw(U0 _x) {
+	static constexpr Static_Modint raw(U0 _x) noexcept {
 		Static_Modint x;
 		return x.x = _x, x;
 	}
@@ -45,6 +45,18 @@ public:
 	}
 	constexpr Static_Modint &operator /= (const Static_Modint &rhs) {
 		return (*this *= rhs.inv());
+	}
+	friend constexpr Static_Modint fma(const Static_Modint &a, const Static_Modint &b, const Static_Modint &c) {
+		return raw((static_cast<U1>(a.x) * b.x + c.x) % Mod);
+	}
+	friend constexpr Static_Modint fam(const Static_Modint &a, const Static_Modint &b, const Static_Modint &c) {
+		return raw((a.x + static_cast<U1>(b.x) * c.x) % Mod);
+	}
+	friend constexpr Static_Modint fms(const Static_Modint &a, const Static_Modint &b, const Static_Modint &c) {
+		return raw((static_cast<U1>(a.x) * b.x + Mod - c.x) % Mod);
+	}
+	friend constexpr Static_Modint fsm(const Static_Modint &a, const Static_Modint &b, const Static_Modint &c) {
+		return raw((a.x + static_cast<U1>(Mod - b.x) * c.x) % Mod);
 	}
 	constexpr Static_Modint div_2() const {
 		return raw(((x & 1) ? (x + Mod) : x) >> 1);
@@ -103,7 +115,10 @@ public:
 			if (y & 1) ans *= x;
 		return ans;
 	}
-	friend constexpr ostream& operator << (ostream& os, const Static_Modint &x) {
+	friend constexpr std::istream& operator >> (std::istream& is, Static_Modint &x) {
+		return is >> x.x;
+	}
+	friend constexpr std::ostream& operator << (std::ostream& os, const Static_Modint &x) {
 		return os << x.x;
 	}
 	friend constexpr bool operator == (const Static_Modint &x, const Static_Modint &y) {
@@ -129,5 +144,5 @@ template<u32 P>
 using sm32 = Static_Modint<u32, u64, int, P>;
 template<u64 P>
 using sm64 = Static_Modint<u64, u128, i64, P>;
-using Z = sm32<MOD>;
+using Z = sm32<998244353U>;
 ```
