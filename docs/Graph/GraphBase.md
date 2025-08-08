@@ -48,6 +48,9 @@ private:
 		auto size() const {
 			return std::distance(begin_, end_);
 		}
+		bool empty() const {
+			return !size();
+		}
 		edge<T>& operator [] (int i) const {
 			return begin_[i];
 		}
@@ -66,6 +69,9 @@ private:
 		}
 		auto size() const {
 			return std::distance(begin_, end_);
+		}
+		bool empty() const {
+			return !size();
 		}
 		const edge<T>& operator [] (int i) const {
 			return begin_[i];
