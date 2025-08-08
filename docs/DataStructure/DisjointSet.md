@@ -1,5 +1,7 @@
 并查集，使用路径压缩加按秩合并，单次均摊 $O(\alpha(n))$。
 
+
+
 ```cpp
 struct DisjointSet {
 private:

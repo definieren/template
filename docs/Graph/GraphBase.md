@@ -16,7 +16,7 @@ struct edge {
 	T cost;
 	int id;
 	
-	edge rev() {
+	edge rev() const {
 		return {v, u, cost, id};
 	}
 };
@@ -38,6 +38,7 @@ private:
 	private:
 		iter begin_, end_;
 	public:
+		edgeList(iter begin, iter end): begin_(begin), end_(end) {}
 		iter begin() const {
 			return begin_;
 		}
@@ -56,6 +57,7 @@ private:
 	private:
 		iter begin_, end_;
 	public:
+		edgeListConst(iter begin, iter end): begin_(begin), end_(end) {}
 		iter begin() const {
 			return begin_;
 		}
@@ -75,10 +77,11 @@ public:
 		return prepared;
 	}
 	
-	graph(): n(0), m(0), prepared(false) {}
-	graph(int n): n(n), m(0), prepared(false) {}
-	graph(int n_, const std::vector<edge<T>>& es, const int offset = 1) {
-		n = n_, m = es.size(), edges = es;
+	graph(): n(0), m(0), deg_{}, indeg_{}, outdeg_{}, prepared(false) {}
+	graph(int n): n(n), m(0), deg_{}, indeg_{}, outdeg_{}, prepared(false) {}
+	graph(int n_, const std::vector<edge<T>>& es, const int offset = 1):
+		n(n_), m(es.size()), edges(es),
+		deg_{}, indeg_{}, outdeg_{}, prepared(false) {
 		for (auto& e : edges) {
 			e.u -= offset, e.v -= offset;
 		}
@@ -169,7 +172,7 @@ public:
 		if (deg_.empty()) {
 			degArray_();
 		}
-		return deg[u];
+		return deg_[u];
 	}
 	int indeg(int u) {
 		assert(0 <= u && u < n);

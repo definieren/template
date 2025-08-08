@@ -116,13 +116,14 @@ nav:
       - 行列式: Math/LinearAlgebra/Determinant.md
       - Pfaffian: Math/LinearAlgebra/Pfaffian.md
       - 特征多项式: Math/LinearAlgebra/CharacteristicPolynomial.md
-  - 字符串:
   - 图论:
     - 网络流: Graph/Flow.md
     - 图: Graph/GraphBase.md
     - 双极定向: Graph/st-Numbering.md
+    - 圆方树: Graph/BlockCutTree.md
   - 数据结构:
     - 线段树: DataStructure/SegmentTree.md
+    - 树状数组: DataStructure/Fenwick.md
     - RMQ: DataStructure/RMQ.md
     - Bitset: DataStructure/Bitset.md
     - 哈希表: DataStructure/HashMap.md
