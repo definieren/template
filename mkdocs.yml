@@ -111,11 +111,11 @@ nav:
     - 数论:
       - 质因数分解: Math/NumberTheory/Factorize.md
       - 线性筛: Math/NumberTheory/Sieve.md
-      - 原根: Math/NumberTheory/Primitive Root.md
+      - 原根: Math/NumberTheory/PrimitiveRoot.md
     - 线性代数:
       - 行列式: Math/LinearAlgebra/Determinant.md
       - Pfaffian: Math/LinearAlgebra/Pfaffian.md
-      - 特征多项式: Math/LinearAlgebra/Characteristic Polynomial.md
+      - 特征多项式: Math/LinearAlgebra/CharacteristicPolynomial.md
   - 字符串:
   - 图论:
     - 网络流: Graph/Flow.md
@@ -126,7 +126,7 @@ nav:
     - RMQ: DataStructure/RMQ.md
     - Bitset: DataStructure/Bitset.md
     - 哈希表: DataStructure/HashMap.md
-    - 并查集: DataStructure/Disjoint Set.md
+    - 并查集: DataStructure/DisjointSet.md
     - 可删堆: DataStructure/Heap.md
   - 其他:
     - 凸相关:
