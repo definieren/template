@@ -1118,6 +1118,50 @@
 
   <h1>YesNo</h1>
 
+<p><code>cout</code> 版本：</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kt">bool</span><span class="w"> </span><span class="nf">YES</span><span class="p">(</span><span class="kt">bool</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="p">(</span><span class="n">f</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="s">&quot;YES&quot;</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="s">&quot;NO&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">&#39;\n&#39;</span><span class="p">;</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">f</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="kt">bool</span><span class="w"> </span><span class="nf">NO</span><span class="p">(</span><span class="kt">bool</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="o">!</span><span class="n">YES</span><span class="p">(</span><span class="o">!</span><span class="n">f</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="kt">bool</span><span class="w"> </span><span class="nf">Yes</span><span class="p">(</span><span class="kt">bool</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="p">(</span><span class="n">f</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="s">&quot;Yes&quot;</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="s">&quot;No&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">&#39;\n&#39;</span><span class="p">;</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">f</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="kt">bool</span><span class="w"> </span><span class="nf">No</span><span class="p">(</span><span class="kt">bool</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="o">!</span><span class="n">Yes</span><span class="p">(</span><span class="o">!</span><span class="n">f</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="kt">bool</span><span class="w"> </span><span class="nf">yes</span><span class="p">(</span><span class="kt">bool</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="p">(</span><span class="n">f</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="s">&quot;yes&quot;</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="s">&quot;no&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">&#39;\n&#39;</span><span class="p">;</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">f</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="kt">bool</span><span class="w"> </span><span class="nf">no</span><span class="p">(</span><span class="kt">bool</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="o">!</span><span class="n">yes</span><span class="p">(</span><span class="o">!</span><span class="n">f</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></td></tr></table></div>
+<p>快写版本：</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
