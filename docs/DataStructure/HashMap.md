@@ -96,7 +96,7 @@ public:
 		if (rest == 0) {
 			rebuild();
 		}
-		u32 i = index(k);
+		const u32 i = index(k);
 		if (!used[i]) {
 			used[i] = 1;
 			key[i] = k;
@@ -106,7 +106,11 @@ public:
 		return val[i];
 	}
 	T operator [] (const Key& k) const {
-		return (*this)[k];
+		const u32 i = index(k);
+		if (!used[i]) {
+			return T{};
+		}
+		return val[i];
 	}
 	std::vector<std::pair<Key, T>> data() const {
 		std::vector<std::pair<Key, T>> d;
