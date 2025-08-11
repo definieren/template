@@ -13,37 +13,37 @@
 template<class T, class cmp = std::less<T>>
 struct Heap {
 private:
-	std::priority_queue<T, std::vector<T>, cmp> addQ, delQ;
+  std::priority_queue<T, std::vector<T>, cmp> addQ, delQ;
 public:
-	Heap(): addQ{}, delQ{} {}
-	void reduce() {
-		assert(addQ.size() >= delQ.size());
-		while (delQ.size() && addQ.top() == delQ.top()) {
-			addQ.pop(), delQ.pop();
-		}
-	}
-	void push(T x) {
-		addQ.push(x);
-	}
-	void pop(T x) {
-		delQ.push(x);
-	}
-	void pop() {
-		reduce();
-		assert(addQ.size());
-		addQ.pop();
-	}
-	T top() {
-		reduce();
-		assert(addQ.size());
-		return addQ.top();
-	}
-	size_t size() {
-		assert(addQ.size() >= delQ.size());
-		return addQ.size() - delQ.size();
-	}
-	bool empty() {
-		return !size();
-	}
+  Heap(): addQ{}, delQ{} {}
+  void reduce() {
+    assert(addQ.size() >= delQ.size());
+    while (delQ.size() && addQ.top() == delQ.top()) {
+      addQ.pop(), delQ.pop();
+    }
+  }
+  void push(T x) {
+    addQ.push(x);
+  }
+  void pop(T x) {
+    delQ.push(x);
+  }
+  void pop() {
+    reduce();
+    assert(addQ.size());
+    addQ.pop();
+  }
+  T top() {
+    reduce();
+    assert(addQ.size());
+    return addQ.top();
+  }
+  size_t size() {
+    assert(addQ.size() >= delQ.size());
+    return addQ.size() - delQ.size();
+  }
+  bool empty() {
+    return !size();
+  }
 };
 ```
