@@ -103,6 +103,7 @@ nav:
       - 组合数预处理: Math/Combinatorics/Combination.md
       - 静态取模类: Math/Combinatorics/StaticModint.md
       - 动态取模类: Math/Combinatorics/DynamicModint.md
+      - 蒙哥马利取模类: Math/Combinatorics/MontgomeryModint.md
       - 快速取模: Math/Combinatorics/FastMod.md
     - 多项式:
       - 多项式: Math/Polynomial/Poly.md

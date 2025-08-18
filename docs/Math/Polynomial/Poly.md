@@ -1,368 +1,547 @@
+暂未完工。
+
+还剩多点求值、快速插值、多项式复合、线性递推没写。
+
 ```cpp
-namespace Polynomial {
-using u64 = unsigned long long;
-
-constexpr unsigned Mod = Z::GetMod();
-constexpr size_t logord = __builtin_ctz(Mod - 1);
-constexpr Z g = 3, zeta = g.Pow((Mod - 1) >> logord), inv_zeta = zeta.inv();
-vector<Z> _root{Z::raw(1)}, _inv_root{Z::raw(1)};
-
-Z* root(const size_t &n) {
-  const size_t sz = _root.size();
-  if (sz < n) {
-    _root.resize(n);
-    for (size_t i = __builtin_ctz(sz); static_cast<size_t>(1) << i < n; i ++) {
-      const size_t j = 1 << i;
-      _root[j] = zeta.Pow(1 << (logord - i - 2));
-      for (size_t k = j + 1; k < j * 2; k ++)
-        _root[k] = _root[k - j] * _root[j];
-    }
-  }
-  return _root.data();
-}
-Z* inv_root(const size_t &n) {
-  const size_t sz = _inv_root.size();
-  if (sz < n) {
-    _inv_root.resize(n);
-    for (size_t i = __builtin_ctz(sz); static_cast<size_t>(1) << i < n; i ++) {
-      const size_t j = 1 << i;
-      _inv_root[j] = inv_zeta.Pow(1 << (logord - i - 2));
-      for (size_t k = j + 1; k < j * 2; k ++)
-        _inv_root[k] = _inv_root[k - j] * _inv_root[j];
-    }
-  }
-  return _inv_root.data();
-}
-void DFT(vector<Z> &a) {
-  const size_t n = a.size();
-  static vector<u64> b; b.resize(n), b[0] = 0;
-  for (size_t j = 0, k = n >> 1; j < k; j ++) {
-    u64 u = (u64)a[j], v = (u64)a[j | k];
-    b[j] = u + v, b[j | k] = u + Mod - v;
-  }
-  Z* rt = root(n >> 1);
-  for (size_t k = n >> 2; k >= 1; k >>= 1) {
-    for (size_t j = 0; j < k; j ++) {
-      u64 u = b[j], v = b[j | k] % Mod;
-      b[j] = u + v, b[j | k] = u + Mod - v;
-    }
-    for (size_t i = k << 1, m = 1; i < n; i += k << 1, m ++)
-      for (size_t j = 0; j < k; j ++) {
-        u64 u = b[i | j], v = b[i | j | k] * (u64)rt[m] % Mod;
-        b[i | j] = u + v, b[i | j | k] = u + Mod - v;  
-      }
-  }
-  for (size_t i = 0; i < n; i ++) a[i] = b[i];
-  return;
-}
-void IDFT(vector<Z> &a) {
-  const size_t n = a.size();
-  Z* rt = inv_root(n / 2);
-  for (size_t k = 1; k << 1 < n; k <<= 1) {
-    for (size_t j = 0; j < k; j ++) {
-      Z u = a[j], v = a[j | k];
-      a[j] = u + v, a[j | k] = u - v;
-    }
-    for (size_t i = k << 1, m = 1; i < n; i += k << 1, m ++)
-      for (size_t j = 0; j < k; j ++) {
-        Z u = a[i | j], v = a[i | j | k];
-        a[i | j] = u + v, a[i | j | k] = (u - v) * rt[m];
-      }
-  }
-  Z inv = Z::raw(Mod - Mod / n);
-  for (size_t j = 0, k = n >> 1; j < k; j ++) {
-    Z u = a[j] * inv, v = a[j | k] * inv;
-    a[j] = u + v, a[j | k] = u - v;
-  }
-  return;
-}
-
-struct Poly : public vector<Z> {
-  Poly(): vector<Z>() { return; }
-  explicit Poly(int n): vector<Z>(n) { return; }
-  explicit Poly(const vector<Z> &a): vector<Z>(a) { return; }
-  explicit Poly(const initializer_list<Z> &a): vector<Z>(a) { return; }
-  template<class _InputIterator, class = _RequireInputIter<_InputIterator>>
-  explicit constexpr Poly(_InputIterator __first, _InputIterator __last): vector<Z>(__first, __last) { return; }
-  template<class F> explicit constexpr Poly(int n, F f): vector<Z>(n) {
-    for (int i = 0; i < n; i ++) (*this)[i] = f(i);
-    return;
-  }
-  
-  Poly Shift(const int &k) const {
-    if (k >= 0) { auto ret = *this; ret.insert(ret.begin(), k, Z(0)); return ret; }
-    else return (int)this -> size() <= - k ? Poly() : Poly(this -> begin() - k, this -> end());
-  }
-  Poly Trunc(const size_t &k) const {
-    Poly f = *this; f.resize(k); return f;
-  }
-  
-  friend Poly operator - (Poly rhs) {
-    const size_t n = rhs.size();
-    for (size_t i = 0; i < n; i ++) rhs[i] = - rhs[i];
-    return rhs;
-  }
-  friend Poly operator + (const Poly &rhs) {
-    return rhs;
-  }
-  Poly& operator += (const Poly &rhs) {
-    const size_t n = size(), m = rhs.size();
-    this -> resize(std::max(n, m));
-    for (size_t i = 0; i < m; i ++) (*this)[i] += rhs[i];
-    return *this;
-  }
-  Poly& operator += (const Z &rhs) {
-    if (__builtin_expect(empty(), 0))
-      return (*this) = Poly{rhs};
-    return (*this)[0] += rhs, *this;
-  }
-  Poly& operator -= (const Poly &rhs) {
-    const size_t n = size(), m = rhs.size();
-    this -> resize(std::max(n, m));
-    for (size_t i = 0; i < m; i ++) (*this)[i] -= rhs[i];
-    return *this;
-  }
-  Poly& operator -= (const Z &rhs) {
-    if (__builtin_expect(empty(), 0))
-      return (*this) = Poly{-rhs};
-    return (*this)[0] -= rhs, *this;
-  }
-  Poly& operator *= (Poly rhs) {
-    if (__builtin_expect(!size() || !rhs.size(), 0))
-      return (*this) = Poly();
-    if (size() < rhs.size()) std::swap(*this, rhs);
-    const size_t n1 = size(), n2 = rhs.size();
-    const size_t m = n1 + n2 - 1;
-    if (n2 < static_cast<size_t>(1) << 7) {
-      Poly ret(m);
-      for (size_t i = 0; i < n1; i ++)
-        for (size_t j = 0; j < n2; j ++)
-          ret[i + j] += (*this)[i] * rhs[j];
-      return *this = move(ret);
-    }
-    size_t n = 1;
-    while (n <= m) n <<= 1;
-    resize(n), DFT(*this), rhs.resize(n), DFT(rhs);
-    for (size_t i = 0; i < n; i ++) (*this)[i] *= rhs[i];
-    IDFT(*this), resize(m);
-    return *this;
-  }
-  Poly& operator *= (const Z &rhs) {
-    const size_t n = size();
-    for (size_t i = 0; i < n; i ++) (*this)[i] *= rhs;
-    return *this;
-  }
-  Poly& operator /= (const Poly &rhs) {
-    const size_t n = size(), m = rhs.size();
-    if (__builtin_expect(m > n, 0)) return (*this) = Poly();
-    auto RG = rhs;
-    reverse(begin(), end()), resize(n + 1 - m);
-    reverse(RG.begin(), RG.end()), RG.resize(n + 1 - m);
-    (*this) *= Inv(RG, n + 1 - m), (*this) = Trunc(n + 1 - m);
-    reverse(begin(), end());
-    return *this;
-  }
-  Poly& operator /= (const Z &rhs) {
-    return (*this) *= rhs.inv();
-  }
-  friend Poly operator + (Poly lhs, const Poly &rhs) { return lhs += rhs; }
-  friend Poly operator + (Poly lhs, const Z &rhs) { return lhs += rhs; }
-  friend Poly operator + (const Z &lhs, Poly rhs) { return rhs += lhs; }
-  friend Poly operator - (Poly lhs, const Poly &rhs) { return lhs -= rhs; }
-  friend Poly operator - (Poly lhs, const Z &rhs) { return lhs -= rhs; }
-  friend Poly operator - (const Z &lhs, Poly rhs) { return -(rhs -= lhs); }
-  friend Poly operator * (Poly lhs, const Poly &rhs) { return lhs *= rhs; }
-  friend Poly operator * (Poly lhs, const Z &rhs) { return lhs *= rhs; }
-  friend Poly operator * (const Z &lhs, Poly rhs) { return rhs *= lhs; }
-  friend Poly operator / (Poly lhs, const Poly &rhs) { return lhs /= rhs; }
-  friend Poly operator / (Poly lhs, const Z &rhs) { return lhs /= rhs; }
-  friend Poly Deriv(const Poly &f) {
-    const size_t n = f.size();
-    if (n == 0) return f;
-    Poly g(n - 1);
-    for (size_t i = 0; i + 1 < n; i ++)
-      g[i] = (i + 1) * f[i + 1];
-    return g;
-  }
-  friend Poly Integr(const Poly &f) {
-    const size_t n = f.size();
-    Poly g(n + 1);
-    for (size_t i = 0; i < n; i ++)
-      g[i + 1] = f[i] * comb.inv(i + 1);
-    return g;
-  }
-  friend Poly Inv(const Poly &f, const int &lim) {
-    assert(f.size() && f[0]);
-    Poly g{f[0].inv()}; int k = 1;
-    while (k < lim) {
-      g.resize(k <<= 1);
-      auto F = f.Trunc(k), G = g;
-      DFT(F), DFT(G);
-      for (int i = 0; i < k; i ++) F[i] = F[i] * G[i];
-      IDFT(F), -- F[0];
-      for (int i = 0; i < k / 2; i ++) F[i] = 0;
-      DFT(F);
-      for (int i = 0; i < k; i ++) F[i] *= G[i];
-      IDFT(F);
-      for (int i = k / 2; i < k; i ++) g[i] -= F[i];
-    }
-    return g.Trunc(lim);
-  }
-  friend pair<Poly, Poly> Div(const Poly &f, const Poly &g) {
-    const size_t m = g.size();
-    assert(m != 0);
-    auto Q = f / g, R = (f - g * Q).Trunc(m - 1);
-    return {Q, R};
-  }
-  friend Poly Div(const Poly &h, const Poly &f, const size_t &lim) {
-    if (__builtin_expect(lim == 0, 0)) return Poly();
-    if (__builtin_expect(h.empty(), 0)) return Poly(lim);
-    assert(f.size() && f[0]);
-    size_t k = 1;
-    Poly g{f[0].inv()}, q{g[0] * h[0]}, F, G, H, Q;
-    while (k < lim) {
-      q.resize(k <<= 1);
-      DFT(F = move(f.Trunc(k))), DFT(Q = q), H = move(h.Trunc(k));
-      for (size_t i = 0; i < k; i ++) F[i] *= Q[i];
-      IDFT(F);
-      for (size_t i = 0; i < k / 2; i ++) F[i] = Z::raw(0);
-      for (size_t i = k / 2; i < k; i ++) F[i] -= H[i];
-      DFT(F), g.resize(k), DFT(G = g);
-      for (size_t i = 0; i < k; i ++) F[i] *= G[i];
-      IDFT(F);
-      for (size_t i = k / 2; i < k; i ++) q[i] -= F[i];
-      if (k < lim) {
-        g.resize(k);
-        DFT(F = f.Trunc(k));
-        for (size_t i = 0; i < k; i ++) F[i] = F[i] * G[i];
-        IDFT(F), -- F[0];
-        for (size_t i = 0; i < k / 2; i ++) F[i] = Z::raw(0);
-        DFT(F);
-        for (size_t i = 0; i < k; i ++) F[i] *= G[i];
-        IDFT(F);
-        for (size_t i = k / 2; i < k; i ++) g[i] -= F[i];
-      }
-    }
-    return q.Trunc(lim);
-  }
-  friend Poly Log(const Poly &f, const size_t &lim) {
-    return Integr(Div(Deriv(f), f, lim)).Trunc(lim);
-  }
-  friend Poly Sqrt(const Poly &f, const size_t &lim) {
-    if (__builtin_expect(f.empty(), 0)) return Poly(lim);
-    assert(f[0] == 1); size_t k = 1;
-    Poly g{1}, h{1}, F{1}, G, H;
-    while (k < lim) {
-      g.resize(k <<= 1);
-      G = F, F = f.Trunc(k), H = h;
-      for (size_t i = 0; i < k / 2; i ++) G[i] *= G[i];
-      IDFT(G);
-      for (size_t i = 0; i < k / 2; i ++) G[i] -= F[i] + F[i + k / 2];
-      G.resize(k), H.resize(k), DFT(G), DFT(H);
-      for (size_t i = 0; i < k; i ++) G[i] *= H[i];
-      IDFT(G);
-      for (size_t i = 0; i < k / 2; i ++) g[i + k / 2] -= G[i].div_2();
-      if (k < lim) {
-        h.resize(k), DFT(G = g), F = G;
-        for (size_t i = 0; i < k; i ++) G[i] = G[i] * H[i];
-        IDFT(G), -- G[0];
-        for (size_t i = 0; i < k / 2; i ++) G[i] = Z::raw(0);
-        DFT(G);
-        for (size_t i = 0; i < k; i ++) G[i] *= H[i];
-        IDFT(G);
-        for (size_t i = k / 2; i < k; i ++) h[i] -= G[i];
-      }
-    }
-    return g.Trunc(lim);
-  }
-  friend Poly Exp(const Poly &f, const size_t &lim) {
-    if (__builtin_expect(f.empty(), 0)) {
-      if (__builtin_expect(lim == 0, 0)) return Poly();
-      Poly ret(lim); ret[0] = Z::raw(1); return ret;
-    }
-    assert(f[0] == 0);
-    size_t k = 1;
-    Poly g{1}, h{1}, F{1}, dF, G, dG, H;
-    while (k < lim) {
-      G = F, dG = move(Deriv(g).Trunc(k));
-      dF = move(Deriv(f.Trunc(k)).Trunc(k)), DFT(F = dF);
-      for (size_t i = 0; i < k; i ++) G[i] *= F[i];
-      IDFT(G), g.resize(k <<= 1);
-      for (size_t i = 0; i < k / 2; i ++) G[i] = dG[i] - G[i];
-      G.insert(G.begin(), G.back()), G.back() = Z::raw(0);
-      G.resize(k), DFT(G), h.resize(k), H = h, DFT(H);
-      for (size_t i = 0; i < k; i ++) G[i] *= H[i];
-      IDFT(G), G = G.Shift(k / 2 - 1), G.resize(k - 1);
-      G = Integr(G + dF) - f.Trunc(k);
-      DFT(G), H = move(g.Trunc(k)), DFT(H);
-      for (size_t i = 0; i < k; i ++) G[i] *= H[i];
-      IDFT(G);
-      for (size_t i = k / 2; i < k; i ++) g[i] -= G[i];
-      if (k < lim) {
-        h.resize(k);
-        DFT(G = g), DFT(H = h), F = G;
-        for (size_t i = 0; i < k; i ++) G[i] = G[i] * H[i];
-        IDFT(G), -- G[0];
-        for (size_t i = 0; i < k / 2; i ++) G[i] = Z::raw(0);
-        DFT(G);
-        for (size_t i = 0; i < k; i ++) G[i] *= H[i];
-        IDFT(G);
-        for (size_t i = k / 2; i < k; i ++) h[i] -= G[i];
-      }
-    }
-    return g.Trunc(lim);
-  }
-  friend Poly Pow(const Poly &f, const u64 &k, const size_t &lim) {
-    size_t i = 0;
-    while (i < f.size() && !f[i]) i ++;
-    if (i == f.size() || i * k >= lim) return Poly(lim);
-    Z v = f[i]; Poly g = f.Shift(- i) * v.inv();
-    return Exp(Log(move(g), lim - i * k) * k, lim - i * k).Shift(i * k) * v.Pow(k);
-  }
-  friend Poly Pow(const Poly &f, const u64 &k1, const u64 &k2, const size_t &lim) {
-    size_t i = 0;
-    while (i < f.size() && !f[i]) i ++;
-    if (i == f.size() || i * k1 >= lim) return Poly(lim);
-    Z v = f[i]; Poly g = f.Shift(- i) * v.inv();
-    return Exp(Log(move(g), lim - i * k1) * k1, lim - i * k1).Shift(i * k1) * v.Pow(k2);
-  }
+template<class Z> 
+struct polynomial: public std::vector<Z> {
+private:
+	static constexpr Z g = 3;
+	static constexpr auto Mod = Z::getMod();
+	static constexpr int log_ord = []() {
+		auto x = Mod - 1;
+		int y = 0;
+		while (~x & 1) {
+			x >>= 1, ++ y;
+		}
+		return y;
+	}();
+	static constexpr std::array<Z, log_ord + 1> invn = []() {
+		std::array<Z, log_ord + 1> inv{};
+		for (int i = 0; i <= log_ord; i ++) {
+			inv[i] = Z(1 << i).inv();
+		}
+		return inv;
+	}();
+	static std::pair<Z*, Z*> get_root(const int &n) {
+		static std::vector<Z> root{Z::from_raw(1)};
+		static std::vector<Z> inv_root{Z::from_raw(1)};
+		if (static_cast<int>(root.size()) < n) {
+			int i = root.size();
+			root.resize(n), inv_root.resize(n);
+			for (; i != n; i <<= 1) {
+				const Z w = g.pow(Mod / (i << 2)), iw = w.inv();
+				for (int j = 0; j != i; j ++) {
+					root[i + j] = root[j] * w;
+					inv_root[i + j] = inv_root[j] * iw;
+				}
+			}
+		}
+		return {root.data(), inv_root.data()};
+	}
+	static constexpr int get_len(int n) {
+		return n < 3 ? n : 2 << std::__lg(n - 1);
+	}
+	static void dif_n(Z *f, const int &n) {
+		const Z* rt = get_root(n).first;
+		for (int i = n; i >>= 1; ) {
+			for (int j = 0, k = 0; j != n; j += i << 1, ++ k) {
+				for (int p = j, q = j + i; p != j + i; ++ p, ++ q) {
+					const Z u = f[p], v = f[q] * rt[k];
+					f[p] = u + v, f[q] = u - v;
+				}
+			}
+		}
+	}
+	static void dit_n(Z *f, const int &n) {
+		const Z* irt = get_root(n).second;
+		for (int i = 1; i != n; i <<= 1) {
+			for (int j = 0, k = 0; j != n; j += i << 1, ++ k) {
+				for (int p = j, q = j + i; p != j + i; ++ p, ++ q) {
+					const Z u = f[p], v = f[q];
+					f[p] = u + v, f[q] = (u - v) * irt[k];
+				}
+			}
+		}
+		const Z inv = invn[std::__lg(n)];
+		for (int i = 0; i < n; i ++) {
+			f[i] *= inv;
+		}
+	}
+	static void dif_rhalf_n(Z *f, const int &n) {
+		const Z* rt = get_root(n).first;
+		for (int i = n, m = 1; i >>= 1; m <<= 1) {
+			for (int j = 0, k = 0; j != n; j += i << 1, ++ k) {
+				for (int p = j, q = j + i; p != j + i; ++ p, ++ q) {
+					const Z u = f[p], v = f[q] * rt[m + k];
+					f[p] = u + v, f[q] = u - v; 
+				}
+			}
+		}
+	}
+	static void dit_rhalf_n(Z *f, const int &n) {
+		const Z* irt = get_root(n).second;
+		for (int i = 1, m = n; m >>= 1; i <<= 1) {
+			for (int j = 0, k = 0; j != n; j += i << 1, ++ k) {
+				for (int p = j, q = j + i; p != j + i; ++ p, ++ q) {
+					const Z u = f[p], v = f[q];
+					f[p] = u + v, f[q] = (u - v) * irt[m + k];
+				}
+			}
+		}
+		const Z inv = invn[std::__lg(n)];
+		for (int i = 0; i < n; i ++) {
+			f[i] *= inv;
+		}
+	}
+	static void neg_n(const Z *a, const int &n, Z *b) {
+		for (int i = 0; i < n; i ++) {
+			b[i] = -a[i];
+		}
+	}
+	static void add_n(const Z *a, const Z *b, const int &n, Z *c) {
+		for (int i = 0; i < n; i ++) {
+			c[i] = a[i] + b[i];
+		}
+	}
+	static void sub_n(const Z *a, const Z *b, const int &n, Z *c) {
+		for (int i = 0; i < n; i ++) {
+			c[i] = a[i] - b[i];
+		}
+	}
+	static void dot_n(const Z *a, const Z *b, const int &n, Z *c) {
+		for (int i = 0; i < n; i ++) {
+			c[i] = a[i] * b[i];
+		}
+	}
+	static void mul_c_n(const Z *a, const Z &c, const int &n, Z *b) {
+		for (int i = 0; i < n; i ++) {
+			b[i] = a[i] * c;
+		}
+	}
+	static void deriv_n(const Z *a, const int &n, Z *b) {
+		for (int i = 1; i != n; i ++) {
+			b[i - 1] = a[i] * i;
+		}
+		b[n - 1] = Z::from_raw(0);
+	}
+	static void integ_n(const Z *a, const int &n, Z *b) {
+		comb.init(n);
+		for (int i = n - 1; i; i --) {
+			b[i] = a[i - 1] * comb.inv(i);
+		}
+		b[0] = Z::from_raw(0);
+	}
+	static void zero_n(Z *a, const int &n) {
+		for (int i = 0; i < n; i ++) {
+			a[i] = Z::from_raw(0);
+		}
+	}
+	static void copy_n(const Z *a, const int &n, Z *b) {
+		memcpy(b, a, sizeof(Z) * n);
+	}
+	static polynomial convolution_fft(polynomial f, polynomial g) {
+		const int n = f.size() + g.size() - 1, m = get_len(n);
+		f.resize(m), dif_n(f.data(), m);
+		g.resize(m), dif_n(g.data(), m);
+		dot_n(f.data(), g.data(), m, f.data());
+		dit_n(f.data(), m), f.resize(n);
+		return f;
+	}
+	static polynomial convolution_naive(const polynomial &f, const polynomial &g) {
+		const int n = f.size(), m = g.size();
+		if (__builtin_expect(f.empty() || g.empty(), 0)) {
+			return polynomial{};
+		}
+		polynomial fg(n + m - 1);
+		for (int i = 0; i != n; i ++) {
+			for (int j = 0; j != m; j ++) {
+				fg[i + j] += f[i] * g[j];
+			}
+		}
+		return fg;
+	}
+	polynomial pow_one(const int &n, const int &k) const {
+		if (__builtin_expect(k == 0, 0)) {
+			polynomial f(this->size());
+			f[0] = 1;
+			return f;
+		}
+		return (k == 1) ? mod_xk(n) : (mod_xk(n).log() * k).exp();
+	}
+	polynomial pow_ord_zero(const int &n, int k_mod_p, int k_mod_phi_p) const {
+		if ((*this)[0] == Z::from_raw(1)) {
+			return pow_one(n, k_mod_p);
+		}
+		return (*this * (*this)[0].inv()).pow_one(n, k_mod_p) * (*this)[0].pow(k_mod_phi_p);
+	}
+	polynomial sqrt_ord_zero(const Z &s) const {
+		constexpr Z c = -Z(2).inv();
+		const int shrink_len = this->size();
+		const int n = get_len(shrink_len);
+		polynomial res(shrink_len), inv_res(shrink_len);
+		polynomial dft_res(n), dft_inv_res(n), f(n);
+		int N = 1, N2 = 2;
+		res[0] = dft_res[0] = s, inv_res[0] = s.inv();
+		while (N < shrink_len) {
+			const int newN = (N2 == n) ? shrink_len : N2;
+			dot_n(dft_res.data(), dft_res.data(), N, dft_res.data()), dit_n(dft_res.data(), N);
+			sub_n(dft_res.data(), this->data(), N, dft_res.data() + N);
+			sub_n(dft_res.data() + N, this->data() + N, newN - N, dft_res.data() + N);
+			zero_n(dft_res.data(), N), dif_n(dft_res.data(), N2);
+			copy_n(inv_res.data(), N, dft_inv_res.data()), dif_n(dft_inv_res.data(), N2);
+			dot_n(dft_res.data(), dft_inv_res.data(), N2, dft_res.data()), dit_n(dft_res.data(), N2);
+			mul_c_n(dft_res.data() + N, c, newN - N, res.data() + N);
+			if (__builtin_expect(N2 < n, 1)) {
+				copy_n(res.data(), N2, f.data()), dif_n(f.data(), N2);
+				copy_n(f.data(), N2, dft_res.data());
+				dot_n(f.data(), dft_inv_res.data(), N2, f.data()), dit_n(f.data(), N2);
+				zero_n(f.data(), N), dif_n(f.data(), N2);
+				dot_n(f.data(), dft_inv_res.data(), N2, f.data()), dit_n(f.data(), N2);
+				neg_n(f.data() + N, N, inv_res.data() + N);
+			}
+			N <<= 1, N2 <<= 1;
+		}
+		return res;
+	}
+public:
+	polynomial(): std::vector<Z>() {}
+	explicit polynomial(const int &n): std::vector<Z>(n) {}
+	explicit polynomial(const std::vector<Z> &a): std::vector<Z>(a) {}
+	explicit polynomial(const std::initializer_list<Z> &a): std::vector<Z>(a) {}
+	template<class _InputIterator, class = std::_RequireInputIter<_InputIterator>>
+	explicit polynomial(_InputIterator __first, _InputIterator __last): std::vector<Z>(__first, __last) {}
+	template<class F, class = Z(*)(int)>
+	explicit polynomial(const int &n, const F &f): std::vector<Z>(n) {
+		for (int i = 0; i != n; i ++) {
+			(*this)[i] = f(i);
+		}
+	}
+	
+	int ord() const {
+		int ord = 0;
+		while (ord != static_cast<int>(this->size()) && !(*this)[ord]) {
+			++ ord;
+		}
+		return ord;
+	}
+	int deg() const {
+		int deg = static_cast<int>(this->size()) - 1;
+		while (deg >= 0 && !(*this)[deg]) {
+			-- deg;
+		}
+		return deg;
+	}
+	void remove0() {
+		while (this->size() && !this->back()) {
+			this->pop_back();
+		}
+	}
+	polynomial mul_xk(const int &k) const {
+		auto f = *this;
+		f.insert(f.begin(), k, Z::from_raw(0));
+		return f;
+	}
+	polynomial div_xk(const int &k) const {
+		return polynomial(this->begin() + std::min(static_cast<int>(this->size()), k), this->end());
+	}
+	polynomial mod_xk(const int &k) const {
+		return polynomial(this->begin(), this->begin() + std::min(static_cast<int>(this->size()), k));
+	}
+	polynomial compose_cx(const Z &c) const {
+		const int n = this->size();
+		auto f = *this;
+		Z ci = Z::from_raw(1);
+		for (int i = 1; i < n; i ++) {
+			f[i] *= (ci *= c);
+		}
+		return f;
+	}
+	Z operator () (const Z &x) const {
+		const int n = this->size();
+		Z y = Z::from_raw(0);
+		for (int i = n - 1; i >= 0; i --) {
+			(y *= x) += (*this)[i];
+		}
+		return y;
+	}
+	polynomial operator + () const {
+		return *this;
+	}
+	polynomial operator - () const {
+		auto f = *this;
+		neg_n(f.data(), f.size(), f.data());
+		return f;
+	}
+	polynomial& operator += (const Z &rhs) {
+		if (__builtin_expect(this->empty(), 0)) {
+			return polynomial(1, rhs);
+		}
+		return (*this)[0] += rhs, *this;
+	}
+	polynomial& operator -= (const Z &rhs) {
+		if (__builtin_expect(this->empty(), 0)) {
+			return polynomial(1, -rhs);
+		}
+		return (*this)[0] -= rhs, *this;
+	}
+	polynomial& operator *= (const Z &rhs) {
+		mul_c_n(this->data(), rhs, this->size(), this->data());
+		return *this;
+	}
+	polynomial& operator /= (const Z &rhs) {
+		mul_c_n(this->data(), rhs.inv(), this->size(), this->data());
+		return *this;
+	}
+	polynomial& operator += (const polynomial &rhs) {
+		if (this->size() < rhs.size()) {
+			this->resize(rhs.size());
+		}
+		add_n(this->data(), rhs.data(), rhs.size(), this->data());
+		return *this;
+	}
+	polynomial& operator -= (const polynomial &rhs) {
+		if (this->size() < rhs.size()) {
+			this->resize(rhs.size());
+		}
+		sub_n(this->data(), rhs.data(), rhs.size(), this->data());
+		return *this;
+	}
+	polynomial& operator *= (const polynomial &rhs) {
+		return *this = *this * rhs;
+	}
+	friend polynomial operator + (polynomial lhs, const Z &rhs) {
+		return lhs += rhs;
+	}
+	friend polynomial operator - (polynomial lhs, const Z &rhs) {
+		return lhs -= rhs;
+	}
+	friend polynomial operator * (polynomial lhs, const Z &rhs) {
+		return lhs *= rhs;
+	}
+	friend polynomial operator / (polynomial lhs, const Z &rhs) {
+		return lhs /= rhs;
+	}
+	friend polynomial operator + (polynomial lhs, const polynomial &rhs) {
+		return lhs += rhs;
+	}
+	friend polynomial operator - (polynomial lhs, const polynomial &rhs) {
+		return lhs -= rhs;
+	}
+	friend polynomial operator * (const polynomial &f, const polynomial &g) {
+		if (std::min(f.size(), g.size()) > 8 && std::max(f.size(), g.size()) > 128) {
+			return convolution_fft(f, g);
+		} else {
+			return convolution_naive(f, g);
+		}
+	}
+	polynomial deriv() const {
+		if (__builtin_expect(this->emtpy())) {
+			return *this;
+		}
+		auto f = *this;
+		deriv_n(f.data(), f.size(), f.data());
+		return f.pop_back(), f;
+	}
+	polynomial integ() const {
+		auto f = *this;
+		f.resize(this->size() + 1);
+		integ_n(f.data(), f.size(), f.data());
+		return f.pop_back(), f;
+	}
+	polynomial inv() const {
+		if (__builtin_expect(this->empty(), 0)) {
+			return polynomial{};
+		}
+		assert((*this)[0] != Z::from_raw(0));
+		const int shrink_len = this->size();
+		const int n = get_len(shrink_len);
+		polynomial res(shrink_len), f(n), g(n);
+		res[0] = (*this)[0].inv();
+		int N = 1, N2 = 2;
+		while (N < shrink_len) {
+			const int newN = (N2 == n) ? shrink_len : N2;
+			copy_n(this->data(), newN, f.data()), dif_n(f.data(), N2);
+			copy_n(res.data(), N, g.data()), dif_n(g.data(), N2);
+			dot_n(f.data(), g.data(), N2, f.data()), dit_n(f.data(), N2);
+			zero_n(f.data(), N), dif_n(f.data(), N2);
+			dot_n(f.data(), g.data(), N2, f.data()), dit_n(f.data(), N2);
+			neg_n(f.data() + N, newN - N, res.data() + N);
+			N = newN, N2 = N << 1;
+		}
+		return res;
+	}
+	polynomial div(const polynomial &g) const {
+		if (g.size() > this->size()) {
+			return polynomial{};
+		}
+		assert(g.size());
+		const int n = this->size() - g.size() + 1;
+		polynomial q(n), r(n);
+		std::reverse_copy(this->begin() + g.size() - 1, this->end(), q.begin());
+		std::reverse_copy(g.begin() + std::max(0, static_cast<int>(g.size()) - n), g.end(), r.begin());
+		q = (q * r.inv()).mod_xk(n), std::reverse(q.begin(), q.end());
+		return q;
+	}
+	std::pair<polynomial, polynomial> div_mod(const polynomial &g) const {
+		if (g.size() > this->size()) {
+			return {polynomial{}, *this};
+		}
+		assert(g.size());
+		const int n = g.size() - 1;
+		auto q = div(g);
+		return {q, mod_xk(n) - (g.mod_xk(n) * q.mod_xk(n)).mod_xk(n)};
+	}
+	polynomial exp() const {
+		if (__builtin_expect(this->empty(), 0)) {
+			return polynomial{};
+		}
+		assert((*this)[0] == Z::from_raw(0));
+		if (__builtin_expect(this->size() == 1, 0)) {
+			return polynomial{Z::from_raw(1)};
+		}
+		const int shrink_len = this->size();
+		const int n = get_len(shrink_len);
+		int N = 1, N2 = 2;
+		polynomial res(shrink_len), inv_res(shrink_len);
+		polynomial dft_res(n), dft_inv_res(n), f(n);
+		res[0] = inv_res[0] = dft_res[0] = dft_res[1] =1;
+		while (N < shrink_len) {
+			const int newN = (N2 == n) ? shrink_len : N2;
+			deriv_n(this->data(), N, f.data()), dif_n(f.data(), N);
+			dot_n(f.data(), dft_res.data(), N, f.data()), dit_n(f.data(), N);
+			f[N - 1] = -f[N - 1], deriv_n(res.data(), N, f.data() + N);
+			sub_n(f.data() + N, f.data(), N - 1, f.data() + N);
+			zero_n(f.data(), N - 1), dif_n(f.data(), N2);
+			copy_n(inv_res.data(), N, dft_inv_res.data()), dif_n(dft_inv_res.data(), N2);
+			dot_n(f.data(), dft_inv_res.data(), N2, f.data()), dit_n(f.data(), N2);
+			integ_n(f.data(), N2, f.data()), zero_n(f.data(), N);
+			sub_n(f.data() + N, this->data() + N, newN - N, f.data() + N), dif_n(f.data(), N2);
+			dot_n(f.data(), dft_res.data(), N2, f.data()), dit_n(f.data(), N2);
+			neg_n(f.data() + N, newN - N, res.data() + N);
+			if (__builtin_expect(N2 < n, 1)) {
+				copy_n(res.data(), N2, dft_res.data()), dif_n(dft_res.data(), N2 + N2);
+				copy_n(dft_res.data(), N2, f.data());
+				dot_n(f.data(), dft_inv_res.data(), N2, f.data()), dit_n(f.data(), N2);
+				zero_n(f.data(), N), dif_n(f.data(), N2);
+				dot_n(f.data(), dft_inv_res.data(), N2, f.data()), dit_n(f.data(), N2);
+				neg_n(f.data() + N, N, inv_res.data() + N);
+			}
+			N <<= 1, N2 <<= 1;
+		}
+		return res;
+	}
+	polynomial log() const {
+		if (__builtin_expect(this->empty(), 0)) {
+			return polynomial{};
+		}
+		assert((*this)[0] == Z::from_raw(1));
+		polynomial f(this->size());
+		deriv_n(this->data(), this->size(), f.data());
+		f *= inv(), f.resize(this->size());
+		integ_n(f.data(), this->size(), f.data());
+		return f;
+	}
+	polynomial pow(int k_chkmin_sz, int k_mod_p, int k_mod_phi_p) const {
+		if (__builtin_expect(this->empty(), 0)) {
+			return polynomial{};
+		}
+		if (__builtin_expect(k_chkmin_sz == 0, 0)) {
+			polynomial f(this->size());
+			return f[0] = Z::from_raw(1), f;
+		}
+		const int i = ord();
+		if (static_cast<i64>(i) * k_chkmin_sz >= static_cast<i64>(this->size())) {
+			return polynomial(this->size());
+		}
+		return div_xk(i).pow_ord_zero(this->size() - i * k_chkmin_sz, k_mod_p, k_mod_phi_p).mul_xk(i * k_chkmin_sz);
+	}
+	template<class T> inline polynomial pow(T x) const {
+		if (x < 0) return inv().pow(-x);
+		return pow(x < static_cast<T>(this->size()) ? x : this->size(), x % Mod, x % (Mod - 1));
+	}
+	std::pair<bool, polynomial> sqrt() const {
+		const int i = ord();
+		if (i == static_cast<int>(this->size())) {
+			return {true, polynomial(this->size())};
+		}
+		if (i & 1) {
+			return {false, polynomial{}};
+		}
+		auto [o, s] = (*this)[i].sqrt();
+		if (o == false) {
+			return {false, polynomial{}};
+		}
+		auto x = div_xk(i);
+		x.insert(x.end(), i >> 1, 0);
+		return {true, x.sqrt_ord_zero(s).mul_xk(i >> 1)};
+	}
+	polynomial composional_inv() const {
+		assert(this->size() >= 2U);
+		assert((*this)[0] == Z::from_raw(0));
+		assert((*this)[1] != Z::from_raw(0));
+		constexpr Z inv2 = Z(2).inv();
+		const int shrink_len = this->size();
+		const int n = get_len(shrink_len << 1);
+		const Z *irt = get_root(2 * n).second;
+		const Z invf1 = (*this)[1].inv();
+		
+		polynomial P(n), Q(n);
+		polynomial dftP(n << 1), dftQ(n << 1);
+		P[0] = Z::from_raw(1);
+		Z v = -1;
+		for (int i = 1; i < shrink_len; i ++) {
+			v *= invf1, Q[i] = (*this)[i] * v;
+		}
+		int N = shrink_len, M = 1, newN = 0;
+		for (; N > 1; N = newN, M <<= 1) {
+			newN = (N + 1) >> 1;
+			const int len = get_len((N * M) << 2);
+			zero_n(dftP.data(), len), zero_n(dftQ.data(), len);
+			for (int j = 0; j < M; j ++) {
+				copy_n(P.data() + j * N, N, dftP.data() + 2 * j * N);
+				copy_n(Q.data() + j * N, N, dftQ.data() + 2 * j * N);
+			}
+			
+			dftQ[2 * N * M] = 1;
+			dif_n(dftP.data(), len);
+			dif_n(dftQ.data(), len);
+			P.resize(len >> 1), Q.resize(len >> 1);
+			for (int i = 0; i < len; i += 2) {
+				Q[i >> 1] = dftQ[i] * dftQ[i + 1];
+			}
+			if (N & 1) {
+				for (int i = 0; i < len; i += 2) {
+					P[i >> 1] = (dftP[i] * dftQ[i + 1] + dftP[i + 1] * dftQ[i]) * inv2;
+				}
+			} else {
+				for (int i = 0; i < len; i += 2) {
+					P[i >> 1] = (dftP[i] * dftQ[i + 1] - dftP[i + 1] * dftQ[i]) * irt[i >> 1] * inv2;
+				}
+			}
+			dit_n(P.data(), len >> 1);
+			dit_n(Q.data(), len >> 1);
+			if (N * M * 4 == len) {
+				-- Q[0];
+			}
+			
+			for (int j = 1; j < M * 2; j ++) {
+				copy_n(P.data() + j * N, newN, P.data() + j * newN);
+				copy_n(Q.data() + j * N, newN, Q.data() + j * newN);
+			}
+		}
+		
+		P.resize(M * newN);
+		std::reverse(P.begin(), P.end());
+		P.resize(shrink_len);
+		for (int i = 1; i < shrink_len; i ++) {
+			P[i] *= (shrink_len - 1) * comb.inv(i);
+		}
+		std::reverse(P.begin(), P.end());
+		P = P.pow_one(shrink_len - 1, (int)(-comb.inv(shrink_len - 1))) * invf1;
+		P.insert(P.begin(), 0);
+		return P;
+	}
 };
-}
-using Polynomial::DFT;
-using Polynomial::IDFT;
-using Polynomial::Poly;
-
-Poly Berlekamp_Massey(const Poly &a) {
-  Poly c, oldc; int f = - 1;
-  for (int i = 0; i < (int)a.size(); i ++) {
-    Z delta = a[i];
-    for (int j = 0; j < (int)c.size(); j ++)
-      delta -= c[j] * a[i - j - 1];
-    if (!delta) continue;
-    if (!~f) { c.resize(i + 1), f = i; continue; }
-    Poly d = oldc; Z df = 0;
-    d *= - 1, d.insert(d.begin(), 1);
-    for (int j = 0; j < (int)d.size(); j ++)
-      df += d[j] * a[f - j];
-    (d *= delta / df).insert(d.begin(), i - f - 1, Z(0));
-    auto tmp = c; c += d;
-    if (i - tmp.size() > f - oldc.size())
-      oldc = tmp, f = i;
-  }
-  c *= - 1, c.insert(c.begin(), 1);
-  return c;
-}
-Z Linear_Recurrence(Poly F, Poly G, i64 n) {
-  Poly P, Q;
-  const int m = G.size();
-  while (n) {
-    Q = G;
-    for (int i = 1; i < m; i += 2) Q[i] = - Q[i];
-    P = F * Q, Q = G * Q;
-    for (int i = 0; i < m; i ++) G[i] = Q[i << 1];
-    for (int i = 0; i + 1 < m; i ++) F[i] = P[i << 1 | (n & 1)];
-    n >>= 1;
-  }
-  return F[0] / G[0];
-}
+using poly = polynomial<Z>;
 ```
